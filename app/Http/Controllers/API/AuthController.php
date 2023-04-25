@@ -33,7 +33,8 @@ class AuthController extends Controller
         $input['password'] = bcrypt($request['password']);
         $user = User::create($input);
 
-        $success['token'] = $user->createToken('auth_token')->plainTextToken;
+        $success['accessToken'] = $user->createToken('auth_token')->plainTextToken;
+        $success['tokenType'] = 'Bearer';
         $success['name'] = $user->name;
 
         return response()->json([
@@ -45,10 +46,10 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        if(Auth::attempt(['email' => $request->email, 'password' => $request->password]))
-        {
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $auth = Auth::user();
-            $success['token'] = $auth->createToken('auth_token')->plainTextToken;
+            $success['accessToken'] = $auth->createToken('auth_token')->plainTextToken;
+            $success['tokenType'] = 'Bearer';
             $success['name'] = $auth->name;
 
             return response()->json([
@@ -56,12 +57,23 @@ class AuthController extends Controller
                 'message' => 'Login Success',
                 'data' => $success
             ]);
-        }else{
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'Login Failed, Please check your Username or Email',
                 'data' => null
             ]);
         }
+    }
+
+    public function logout(Request $request)
+    {
+        $user = $request->user();
+        $user->currentAccessToken()->delete();
+        return response()->json([
+            'status' => true,
+            'message' => 'Logout Success',
+            'data' => null
+        ]);
     }
 }

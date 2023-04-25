@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\App\AppContoller;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+
+
+Route::group([
+    'middleware' => 'isLogin',
+    'prefix' => '/'
+], function () {
+    Route::get('/', function () {
+        return view('welcome');
+    });
+});
+
+Route::group([
+    'prefix' => 'auth',
+], function () {
+    Route::get('/register', [AppContoller::class, 'register'])->name('register');
+    Route::get('/login', [AppContoller::class, 'login'])->name('login');
 });
